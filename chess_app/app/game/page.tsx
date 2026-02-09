@@ -3,7 +3,8 @@ import ChessBoard from "../components/chessboard";
 import { Button } from "../components/buttons/button";
 import PlayIcon from "../svg/play";
 import { useSocket } from "../hooks/usesocket";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
+import { Chess } from "chess.js";
 
 
 export const MOVE=  "move"
@@ -13,6 +14,8 @@ export const GAME_OVER=  "game over"
 export default function Game(){
     const socket = useSocket();
     console.log("Socket:", socket);
+    const [chess,setChess] = useState(new Chess());
+    const [board, setBoard]= useState(chess.board())
     useEffect(() => {
         if (!socket) {
             console.log("Socket not connected");
@@ -21,12 +24,18 @@ export default function Game(){
         socket.onmessage = (event:any) => {
             const message = JSON.parse(event.data);
            console.log(message);
+
            switch (message.type) {
             case INIT_GAME:
                 console.log("Game initialized");
+                setChess(new Chess());
+                setBoard(chess.board());
                 break;
            case MOVE:
                 console.log("Move received");
+                const move= message.payload;
+                chess.move(move);
+                setBoard(chess.board());
                 break;
            case GAME_OVER:
                 console.log("Game over");
@@ -44,7 +53,7 @@ export default function Game(){
     return(
         <>
             <div className="flex justify-center items-center h-screen gap-10">
-                <ChessBoard/> 
+                <ChessBoard board={board}/> 
                 <div className=" ">                
                     <Button types="primary" before={<PlayIcon/>} 
                     size="md" onClick={()=>{
