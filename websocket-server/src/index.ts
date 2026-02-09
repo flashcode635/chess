@@ -6,7 +6,7 @@ const gameManager = new GameManager()
 
 wss.on('connection', function connection(ws){
     console.log('New WebSocket connection established');
-    ws.on('error', console.error)  
+    ws.on('error', console.error);
     
     // Add user immediately when connection is established
     gameManager.addUser(ws)
