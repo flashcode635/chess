@@ -37,6 +37,7 @@ interface ButtonProps
   before?: React.ReactNode;
   after?: React.ReactNode;
   children: React.ReactNode;
+  disabled:boolean
 }
 
 // 3. Component
@@ -45,12 +46,13 @@ export const Button = ({
   size,
   before,
   after,
+  disabled,
   children,
   ...props
 }: ButtonProps) => {
   return (
-    < button className={cn(buttonVariants({ types, size }))}
-      {...props}
+    < button disabled={disabled} className={cn(buttonVariants({ types, size }))}
+      {...props} 
     >
       {before && <span>{before}</span>}
       {children}

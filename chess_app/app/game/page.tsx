@@ -15,7 +15,8 @@ export default function Game(){
     const socket = useSocket();
     console.log("Socket:", socket);
     const [chess,setChess] = useState(new Chess());
-    const [board, setBoard]= useState(chess.board())
+    const [board, setBoard]= useState(chess.board());
+    const [load, setLoad] = useState(false)
     useEffect(() => {
         if (!socket) {
             console.log("Socket not connected");
@@ -53,13 +54,14 @@ export default function Game(){
     return(
         <>
             <div className="flex justify-center items-center h-screen gap-10">
-                <ChessBoard board={board}/> 
+                <ChessBoard socket={socket} board={board}/> 
                 <div className=" ">                
-                    <Button types="primary" before={<PlayIcon/>} 
+                    <Button disabled={load} types="primary" before={<PlayIcon/>} 
                     size="md" onClick={()=>{
                         socket.send(JSON.stringify({
                             type: INIT_GAME
                         }));
+                        setLoad(true)
                     }
                         
                     }>
