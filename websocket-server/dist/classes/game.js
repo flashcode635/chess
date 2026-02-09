@@ -5,6 +5,7 @@ const chess_js_1 = require("chess.js");
 const message_1 = require("../message");
 class Games {
     constructor(player1, player2) {
+        this.moveCount = 0;
         this.player1 = player1;
         this.player2 = player2;
         this.board = new chess_js_1.Chess();
@@ -32,8 +33,12 @@ class Games {
     makeMove(socket, move) {
         try {
             // Validate move format (keeping this as requested)
-            if (!move.from || !move.to || move.from.length !== 2 || move.to.length !== 2) {
-                console.log('Invalid move format:', move);
+            if (this.moveCount % 2 === 0 && socket !== this.player1) {
+                console.log('invalid move 1');
+                return;
+            }
+            if (this.moveCount % 2 === 1 && socket !== this.player2) {
+                console.log('invalid move 2');
                 return;
             }
             this.board.move(move);
@@ -74,6 +79,7 @@ class Games {
                 payload: move
             }));
         }
+        this.moveCount++;
     }
 }
 exports.Games = Games;

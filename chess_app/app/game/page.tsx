@@ -48,7 +48,7 @@ export default function Game(){
     }, [socket]);
 
     if (!socket) {
-        return <div>Connecting to server...</div>;
+        return <div>Connecting ...</div>;
     }
     return(
         <>
