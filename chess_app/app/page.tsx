@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { Button } from "./components/buttons/button";
+import { StartButton } from "./components/buttons/startgame";
 
 export default function Home() {
   const className = `bg-gray-800 text-gray-300 w-54 h-10 rounded-md my-4  self-center hover:shadow-sm font-sans p-2 border-2 border-gray-800 
@@ -15,7 +16,7 @@ export default function Home() {
           {/* auth options */}
           <input type="text" placeholder="Username" className={className} />
           {/* button */}
-          <Button> <Link href="/game">Start Game </Link> </Button>
+          <StartButton />
         </div>
       </div>
     </>

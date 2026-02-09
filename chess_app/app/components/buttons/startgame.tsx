@@ -1,20 +1,17 @@
 "use client";
-import { useSocket } from "@/app/hooks/usesocket";
+
 import { Button } from "./button";
-import PlayIcon from "@/app/svg/play";
+import Link from "next/link";
+import { useState } from "react";
 
 export const StartButton =()=>{
-//     const socket = useSocket();
-    
-//     if (!socket) {
-//        return <div>Socket not available</div>;
-//     }
-//     const handlePlay = () => {
-//    return console.log("hello "+socket);
-// };
-//     return (
-    
-//     )
+    const [load, setLoad] = useState(false);
+
+    return (
+            <Button disabled={load} onClick={() => setLoad(true)}>
+                <Link href="/game">Start Game </Link>
+            </Button>
+        )
 }
    
 

@@ -2,9 +2,11 @@
 import ChessBoard from "../components/chessboard";
 import { Button } from "../components/buttons/button";
 import PlayIcon from "../svg/play";
-import { useSocket } from "../hooks/usesocket";
+
 import { useEffect, useState } from "react";
 import { Chess } from "chess.js";
+import { useSocket } from "../hooks/usesocket";
+
 
 
 export const MOVE=  "move"
