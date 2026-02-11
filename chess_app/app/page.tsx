@@ -1,5 +1,4 @@
-import Link from "next/link";
-import { Button } from "./components/buttons/button";
+
 import { StartButton } from "./components/buttons/startgame";
 
 export default function Home() {

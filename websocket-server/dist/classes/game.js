@@ -11,75 +11,100 @@ class Games {
         this.board = new chess_js_1.Chess();
         this.timeStart = new Date();
         this.players = [this.player1, this.player2];
-        // Send startgame  message to player1 (white)
+        // Send initial game state to both players
+        const initialState = this.serializeState();
+        // Player1 (white, starts)
         this.player1.send(JSON.stringify({
             type: message_1.INIT_GAME,
             payload: {
                 color: "white",
                 status: "game_started",
-                message: "Game started! You are playing as White. You move first."
-            }
+                message: "Game started! You are playing as White. You move first.",
+                state: initialState,
+            },
         }));
-        // Send  startgame message to player2 (black)
+        // Player2 (black, waiting)
         this.player2.send(JSON.stringify({
             type: message_1.INIT_GAME,
             payload: {
                 color: "black",
                 status: "game_started",
-                message: "Game started! You are playing as Black. Waiting for White's move."
-            }
+                message: "Game started! You are playing as Black. Waiting for White's move.",
+                state: initialState,
+            },
         }));
     }
+    serializeState(lastMove) {
+        return {
+            fen: this.board.fen(),
+            turn: this.board.turn(),
+            inCheck: this.board.inCheck(),
+            isGameOver: this.board.isGameOver(),
+            isCheckmate: this.board.isCheckmate(),
+            isStalemate: this.board.isStalemate(),
+            lastMove,
+        };
+    }
+    getSocketColor(socket) {
+        if (socket === this.player1)
+            return "w";
+        if (socket === this.player2)
+            return "b";
+        return null;
+    }
     makeMove(socket, move) {
-        try {
-            // Validate move format (keeping this as requested)
-            if (this.moveCount % 2 === 0 && socket !== this.player1) {
-                console.log('invalid move 1');
-                return;
-            }
-            if (this.moveCount % 2 === 1 && socket !== this.player2) {
-                console.log('invalid move 2');
-                return;
-            }
-            this.board.move(move);
-        }
-        catch (e) {
-            console.log('Invalid move:', e);
+        const playerColor = this.getSocketColor(socket);
+        // Strict turn enforcement
+        if (!playerColor) {
+            console.log("Unknown player attempted to move");
             return;
         }
-        // game over
-        if (this.board.isGameOver()) {
-            this.player1.send(JSON.stringify({
-                type: message_1.GAME_OVER,
-                payload: {
-                    winner: this.board.turn() === 'w' ? 'player1' : 'player2'
-                }
-            }));
-            this.player2.send(JSON.stringify({
-                type: message_1.GAME_OVER,
-                payload: {
-                    winner: this.board.turn() === 'w' ? 'player1' : 'player2'
-                }
-            }));
+        if (playerColor !== this.board.turn()) {
+            console.log(`Out-of-turn move attempt by ${playerColor === "w" ? "white" : "black"}`);
+            // Optionally, we could send a specific out-of-turn message here
+            return;
         }
-        // Send move ONLY to the opponent (not both players)
-        if (socket === this.player1) {
-            // Player1 made the move, send to Player2
-            console.log("Sending move to player2");
-            this.player2.send(JSON.stringify({
-                type: message_1.MOVE,
-                payload: move
-            }));
+        try {
+            const result = this.board.move(move);
+            if (!result) {
+                console.log("Illegal move attempted:", move);
+                return;
+            }
         }
-        else {
-            // Player2 made the move, send to Player1
-            console.log("Sending move to player1");
-            this.player1.send(JSON.stringify({
-                type: message_1.MOVE,
-                payload: move
-            }));
+        catch (e) {
+            console.log("Invalid move:", e);
+            return;
         }
         this.moveCount++;
+        const state = this.serializeState(move);
+        // Broadcast updated authoritative state to both players
+        const stateMessage = JSON.stringify({
+            type: message_1.STATE_UPDATE,
+            payload: state,
+        });
+        this.player1.send(stateMessage);
+        this.player2.send(stateMessage);
+        // Notify game over with winner info if the game has ended
+        if (state.isGameOver) {
+            const winnerColor = this.board.turn() === "w"
+                ? "black" // if it's white's turn after move and game over, black delivered mate or caused stalemate
+                : "white";
+            const resultType = state.isCheckmate
+                ? "checkmate"
+                : state.isStalemate
+                    ? "stalemate"
+                    : "game_over";
+            const gameOverMessage = JSON.stringify({
+                type: message_1.GAME_OVER,
+                payload: {
+                    winner: winnerColor,
+                    result: resultType,
+                    fen: state.fen,
+                },
+            });
+            this.player1.send(gameOverMessage);
+            this.player2.send(gameOverMessage);
+        }
     }
 }
 exports.Games = Games;

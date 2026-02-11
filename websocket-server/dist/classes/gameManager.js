@@ -17,9 +17,10 @@ class GameManager {
     }
     deleteUser(socket) {
         this.users = this.users.filter((user) => user !== socket);
+        // TODO: Clean up games / pending user if needed
     }
     addhandler(socket) {
-        socket.on('message', (data) => {
+        socket.on("message", (data) => {
             try {
                 const message = JSON.parse(data.toString());
                 if (message.type === message_1.INIT_GAME) {
@@ -38,20 +39,21 @@ class GameManager {
                             type: message_1.INIT_GAME,
                             payload: {
                                 color: "white",
-                                status: "waiting"
-                            }
+                                status: "waiting",
+                                message: "Waiting for an opponent to join...",
+                            },
                         }));
                     }
                 }
                 if (message.type === message_1.MOVE) {
-                    const game = this.games.find(game => game.player1 === socket || game.player2 === socket);
+                    const game = this.games.find((game) => game.player1 === socket || game.player2 === socket);
                     if (game) {
-                        game.makeMove(socket, message.move);
+                        game.makeMove(socket, message.payload.move);
                     }
                 }
             }
             catch (error) {
-                console.error('Invalid JSON received:', error);
+                console.error("Invalid JSON received:", error);
                 return;
             }
         });
